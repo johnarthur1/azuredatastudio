@@ -33,7 +33,7 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 				return (<ConnectionProfile>element).id;
 			} else if (element instanceof ConnectionProfileGroup) {
 				return (<ConnectionProfileGroup>element).id;
-			} else if (element.nodeTypeId === 'Table' || element.nodeTypeId === 'Column') {
+			} else if (element.nodeTypeId === 'Table' || element.nodeTypeId === 'Column' || element.nodeTypeId === 'Function') {
 				return (<TreeNode>element).id;
 			}
 			else {
@@ -73,15 +73,19 @@ export class ServerTreeDragAndDrop implements IDragAndDrop {
 		TreeUpdateUtils.isInDragAndDrop = true;
 		const data = dragAndDropData.getData();
 		const element = data[0];
-		if (element.nodeTypeId === 'Column' || element.nodeTypeId === 'Table') {
+		if (element.nodeTypeId === 'Column' || element.nodeTypeId === 'Table' || element.nodeTypeId === 'Function') {
 			const escapedSchema = element.metadata.schema?.replace(/]/g, ']]');
 			const escapedName = element.metadata.name?.replace(/]/g, ']]');
-			const finalString = escapedSchema ? `[${escapedSchema}].[${escapedName}]` : `[${escapedName}]`;
+			let finalString = escapedSchema ? `[${escapedSchema}].[${escapedName}]` : `[${escapedName}]`;
+
+			if (element.nodeTypeId === 'Function') {
+				finalString = escapedName;
+			}
+
 			originalEvent.dataTransfer.setData(DataTransfers.RESOURCES, JSON.stringify([`${element.nodeTypeId}:${element.id}?${finalString}`]));
 		}
 		return;
 	}
-
 
 	public canDragToConnectionProfileGroup(source: any, targetConnectionProfileGroup: ConnectionProfileGroup) {
 		let canDragOver: boolean = true;
